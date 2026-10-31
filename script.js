@@ -187,25 +187,31 @@
     renderCap();
     rod.classList.toggle('is-done', l === GEN);
   }
-  var ticking = false;
-  function onRod(){
-    ticking = false;
-    var r = track.getBoundingClientRect();
-    var vh = window.innerHeight;
-    if (r.bottom < -vh || r.top > vh * 1.5) return;
-    var span = track.offsetHeight - vh;
-    var p = Math.min(1, Math.max(0, -r.top / span));
-    var l = p < 0.1 ? 2 : Math.min(GEN, 3 + Math.floor((p - 0.1) / 0.13));
-    if (r.top > vh * 0.5) l = 2;
-    setLevel(l);
+  /* Древо растёт само по кругу: 1 -> 7 поколений, пауза, заново. От прокрутки не зависит;
+     вне экрана цикл стоит, чтобы не тратить ресурсы */
+  var loopT = 0, loopOn = false;
+  function stepLoop(){
+    var next = level >= GEN ? 0 : level + 1;
+    setLevel(next);
+    loopT = setTimeout(stepLoop, next === GEN ? 3600 : next === 0 ? 1400 : 1100);
   }
-  window.addEventListener('scroll', function(){ if (!ticking){ ticking = true; requestAnimationFrame(onRod); } }, {passive:true});
+  function runLoop(on){
+    if (on === loopOn) return;
+    loopOn = on;
+    clearTimeout(loopT);
+    if (on) loopT = setTimeout(stepLoop, 600);
+  }
   function treeFit(){ svg.setAttribute('preserveAspectRatio', window.innerWidth < 861 ? 'xMidYMax meet' : 'xMidYMid meet'); }
   treeFit();
   var lastW = window.innerWidth;
-  window.addEventListener('resize', function(){ onRod(); if (window.innerWidth === lastW) return; lastW = window.innerWidth; treeFit(); });
-  onRod();
-  if (level < 0) setLevel(2);
+  window.addEventListener('resize', function(){ if (window.innerWidth === lastW) return; lastW = window.innerWidth; treeFit(); });
+  if (reduce){ setLevel(GEN); }
+  else {
+    setLevel(1);
+    if ('IntersectionObserver' in window){
+      new IntersectionObserver(function(en){ runLoop(en[0].isIntersecting); }, {threshold:0.2}).observe(rod);
+    } else runLoop(true);
+  }
 
   /* Видео: немая петля в кадре, полный ролик по клику */
   var cards = document.querySelectorAll('.vcard');
@@ -268,13 +274,11 @@
   window.addEventListener('resize', laneState);
   laneState();
 
-  /* Тихое проявление медиа */
-  var rv = document.querySelectorAll('.split-media, .lane-wrap, .rows, .steps');
-  if ('IntersectionObserver' in window && !reduce && !skipIntro){
-    var io2 = new IntersectionObserver(function(entries){
-      entries.forEach(function(en){ if (en.isIntersecting){ en.target.classList.add('is-in'); io2.unobserve(en.target); } });
-    }, {threshold:0.15});
-    rv.forEach(function(el){ el.classList.add('rv'); io2.observe(el); });
+  /* Видео героя: петля без звука; если браузер запретил автозапуск - остаётся постер */
+  var hv = document.querySelector('.hero-video');
+  if (hv){
+    if (reduce){ hv.removeAttribute('autoplay'); hv.pause(); }
+    else hv.play().catch(function(){});
   }
 
   /* Форма: заявка уходит в WhatsApp */

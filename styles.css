@@ -114,27 +114,27 @@ body.menu-open .mbar{display:none}
 .hero-ig:hover{color:var(--on-dark);border-color:var(--on-dark)}
 .hero-ig svg{display:block}
 .hero-media{position:relative;margin:0;min-height:100%}
-.hero-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:30% 30%}
+.hero-media img,.hero-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
 .hero-media::before{content:"";position:absolute;inset:0;z-index:1;background:rgba(18,59,51,.16);pointer-events:none}
 .hero-media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,46,40,.75),rgba(12,46,40,0) 16%),linear-gradient(90deg,rgba(12,46,40,.55),rgba(12,46,40,0) 22%);pointer-events:none}
 /* интро героя */
 .js .hero-text > *{opacity:0;transform:translateY(16px);transition:opacity .9s var(--ease-out),transform .9s var(--ease-out)}
-.js .hero-media img{clip-path:inset(100% 0 0 0);transition:clip-path 1.3s var(--ease-out)}
+.js .hero-media img,.js .hero-media video{clip-path:inset(100% 0 0 0);transition:clip-path 1.3s var(--ease-out)}
 .js .hero.is-in .hero-text > *{opacity:1;transform:none}
 .js .hero.is-in .hero-text > :nth-child(2){transition-delay:.08s}
 .js .hero.is-in .hero-text > :nth-child(3){transition-delay:.16s}
 .js .hero.is-in .hero-text > :nth-child(4){transition-delay:.24s}
 .js .hero.is-in .hero-text > :nth-child(5){transition-delay:.3s}
-.js .hero.is-in .hero-media img{clip-path:inset(0 0 0 0)}
+.js .hero.is-in .hero-media img,.js .hero.is-in .hero-media video{clip-path:inset(0 0 0 0)}
 
 /* Семь поколений */
 .rod{background:var(--rose-100)}
-.rod-track{height:160svh;position:relative}
-.rod-stage{position:sticky;top:0;height:100svh;max-width:calc(1360px + 2*var(--pad));margin:0 auto;padding:calc(var(--hdr) + 16px) var(--pad) 24px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(24px,4vw,72px);align-items:center;align-content:center}
+.rod-track{position:relative}
+.rod-stage{max-width:calc(1360px + 2*var(--pad));margin:0 auto;padding:clamp(64px,8vw,112px) var(--pad);display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(24px,4vw,72px);align-items:center;align-content:center}
 .rod-text{position:relative}
 .rod-count{display:flex;align-items:baseline;gap:18px;margin:12px 0 26px;min-height:96px}
 .rod-num{font-family:var(--serif);font-size:clamp(64px,7vw,96px);line-height:1;color:var(--em-800);font-variant-numeric:lining-nums tabular-nums;min-width:2.2ch}
-.rod-cap{font-size:16px;line-height:1.35;color:var(--ink-2);max-width:18em}
+.rod-cap{font-size:16px;line-height:1.35;color:var(--ink-2);max-width:18em;min-height:4.05em}
 .rod-final{font-size:18px;line-height:1.55;color:var(--ink);margin:0 0 30px}
 .rod-tree{height:min(66svh,600px);display:flex;align-items:center}
 .tree{width:100%;height:100%;overflow:visible}
@@ -218,8 +218,10 @@ body.menu-open .mbar{display:none}
 .chakras li:last-child{border-bottom:0}
 .chakras li::before{content:"";position:absolute;left:-34px;top:21px;width:13px;height:13px;border-radius:50%;background:var(--rose-50);border:1px solid var(--gold-deep);transition:background-color .6s var(--ease-out)}
 .chakras li:last-child::before{background:var(--em-700);border-color:var(--em-700)}
-.ladder.is-in .chakras li::before{background:var(--gold)}
-.ladder.is-in .chakras li:last-child::before{background:var(--em-700)}
+.chakras li::before{animation:chakra 7s var(--ease-out) infinite}
+.chakras li:nth-child(1)::before{animation-delay:6s}.chakras li:nth-child(2)::before{animation-delay:5s}.chakras li:nth-child(3)::before{animation-delay:4s}.chakras li:nth-child(4)::before{animation-delay:3s}.chakras li:nth-child(5)::before{animation-delay:2s}.chakras li:nth-child(6)::before{animation-delay:1s}.chakras li:nth-child(7)::before{animation-delay:0s}
+@keyframes chakra{0%,100%{background:var(--rose-50);box-shadow:0 0 0 0 rgba(195,164,105,0)}8%{background:var(--gold);box-shadow:0 0 0 6px rgba(195,164,105,.22)}22%{background:var(--gold);box-shadow:0 0 0 0 rgba(195,164,105,0)}40%{background:var(--rose-50)}}
+.chakras li:last-child::before{animation:none}
 .chakras li:nth-child(6)::before{transition-delay:.1s}.chakras li:nth-child(5)::before{transition-delay:.2s}.chakras li:nth-child(4)::before{transition-delay:.3s}.chakras li:nth-child(3)::before{transition-delay:.4s}.chakras li:nth-child(2)::before{transition-delay:.5s}.chakras li:nth-child(1)::before{transition-delay:.6s}
 .ch-n{font-family:var(--serif);font-size:25px;line-height:1.15;color:var(--em-800)}
 .ch-d{font-size:14.5px;color:var(--ink-2)}
@@ -323,8 +325,6 @@ body.menu-open .mbar{display:none}
 .vmodal-x{position:absolute;top:-6px;right:-58px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(244,236,232,.4);background:transparent;color:var(--on-dark);font-size:26px;line-height:1;cursor:pointer}
 
 /* Тихое проявление медиа */
-.js .rv{opacity:0;transform:translateY(18px);transition:opacity 1s var(--ease-out),transform 1s var(--ease-out)}
-.js .rv.is-in{opacity:1;transform:none}
 
 /* Адаптив */
 @media (max-width:1180px){ /* порог бургера = порог меню: 1180px */
@@ -353,16 +353,15 @@ body.menu-open .mbar{display:none}
   .hero-cta .btn-line-light span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   .hero-ig{margin-top:14px;font-size:13.5px}
   .hero-media::after{background:linear-gradient(180deg,rgba(12,46,40,.6),rgba(12,46,40,0) 30%)}
-  .hero-media img{object-position:50% 12%}
+  .hero-media img,.hero-media video{object-position:50% 14%}
   .hero-note{display:none}
-  .rod-track{height:150svh}
-  .rod-stage{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);align-items:start;gap:8px;padding-top:calc(var(--hdr) + 16px);padding-bottom:96px}
+  .rod-stage{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);align-items:start;gap:8px;min-height:0;padding-top:64px;padding-bottom:56px}
   .rod .h2{font-size:30px;margin-bottom:6px}
   .rod-count{min-height:0;margin:4px 0 8px;gap:14px}
   .rod-num{font-size:56px}
   .rod-cap{font-size:14.5px}
   .rod-final{font-size:15.5px;margin-bottom:14px}
-  .rod-tree{height:auto;min-height:0;align-self:end;overflow:hidden}
+  .rod-tree{height:auto;min-height:0;aspect-ratio:1000/720;align-self:end;overflow:hidden}
   .rod-cta{height:48px}
   .split,.split-rev,.contact{grid-template-columns:minmax(0,1fr);gap:40px}
   .split > *,.contact > *{min-width:0}
