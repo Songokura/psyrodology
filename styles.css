@@ -30,6 +30,7 @@
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 [id]{scroll-margin-top:var(--hdr)}
+.pw[id]{scroll-margin-top:0}
 a,button,select{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .form-thanks{margin:0;padding:14px 16px;border-radius:6px;background:rgba(195,164,105,.14);color:var(--on-dark);font-size:15px}
@@ -230,7 +231,7 @@ body.menu-open .mbar{display:none}
 .poster-link:hover{border-color:var(--em-800)}
 
 /* Доверие */
-.trust{background:var(--rose-50);border-bottom:1px solid var(--rose-200)}
+.trust{background:var(--rose-50);border-top:1px solid var(--rose-200);border-bottom:1px solid var(--rose-200)}
 .trust-in{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 .trust-i{display:flex;flex-direction:column;gap:4px;padding:40px 32px 40px 0;text-decoration:none;color:inherit}
 .trust-i + .trust-i{padding-left:32px;border-left:1px solid var(--rose-200)}
@@ -259,7 +260,6 @@ body.menu-open .mbar{display:none}
 .about-facts{display:flex;flex-wrap:wrap;gap:8px 0;margin:32px 0 0;padding-top:20px;border-top:1px solid var(--rose-200);font-size:15px;color:var(--ink-2)}
 .about-facts span + span::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold);margin:0 14px;vertical-align:middle}
 .dt-s{color:var(--ink-2);font-size:14.5px}
-.hero-note{font-size:14.5px;color:var(--on-dark-2);margin:18px 0 0}
 .portrait figcaption{font-size:13.5px;color:var(--ink-2);margin-top:12px}
 .portrait .ph{aspect-ratio:4/5;border-radius:6px;background:
   radial-gradient(90% 70% at 30% 20%,rgba(212,154,161,.35),transparent 60%),
@@ -354,7 +354,6 @@ body.menu-open .mbar{display:none}
   .hero-ig{margin-top:14px;font-size:13.5px}
   .hero-media::after{background:linear-gradient(180deg,rgba(12,46,40,.6),rgba(12,46,40,0) 30%)}
   .hero-media img,.hero-media video{object-position:50% 14%}
-  .hero-note{display:none}
   .rod-stage{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr);align-items:start;gap:8px;min-height:0;padding-top:64px;padding-bottom:56px}
   .rod .h2{font-size:30px;margin-bottom:6px}
   .rod-count{min-height:0;margin:4px 0 8px;gap:14px}
@@ -397,7 +396,7 @@ body.menu-open .mbar{display:none}
   .brand{gap:8px}
   .brand .twig{width:15px;height:18px}
   .brand-name{font-size:18px}
-  .brand-role{font-size:9.5px;letter-spacing:.12em}
+  .brand-role{font-size:11px;letter-spacing:.06em}
   .hdr-right{gap:8px}
   .lang-b{min-width:32px}
 }
@@ -407,7 +406,46 @@ body.menu-open .mbar{display:none}
   .hero-ig{display:none}
 }
 
+/* Плиты: обёртка .pw, прогресс в --enter/--exit пишет script.js.
+   Плита растёт по содержимому (min-height:100svh), поэтому на низком экране ничего не режется */
+.pw{position:relative;background:var(--em-950);--enter:1;--exit:0}
+.pw-after-light{background:var(--rose-50)}
+.pw-after-dark{background:var(--em-900)}
+.pw-after-rose{background:var(--rose-100)}
+.plate{position:relative;min-height:100svh;overflow:hidden;isolation:isolate;transform:scale(calc(1 - .06 * var(--exit)));transform-origin:50% 30%;border-radius:calc(28px * (1 - var(--enter))) calc(28px * (1 - var(--enter))) 0 0}
+.plate::after{content:"";position:absolute;inset:0;background:var(--em-950);opacity:calc(.72 * var(--exit));pointer-events:none;z-index:20}
+.pw.gone .plate{visibility:hidden}
+.plate.sec{display:flex;flex-direction:column;justify-content:center}
+.plate.sec > .wrap{width:100%;position:relative;z-index:1}
+.rod.plate{display:flex;align-items:center}
+.rod.plate > .rod-track{width:100%}
+
+/* Сигнатура «семь поколений»: кадр раскрывается кроной от ствола (снизу по центру вверх) */
+.js .crown{clip-path:ellipse(0% 0% at 50% 100%);transition:clip-path 1.5s var(--ease-out)}
+.js .pw.on .crown,.no-intro .crown{clip-path:ellipse(150% 150% at 50% 100%)}
+/* Древо в герое - за текстом, золотом по изумруду */
+.tree-hero{position:absolute;left:0;bottom:0;width:min(58%,820px);height:auto;aspect-ratio:1000/720;opacity:.2;pointer-events:none;z-index:0}
+.tree-hero .lk{stroke:var(--gold)}
+.tree-hero .nd,.tree-hero .g6 .nd,.tree-hero .g7 .nd{fill:var(--gold)}
+.hero-text{z-index:1}
+/* Тихое древо фоном в блоках услуг */
+.tree-ghost{position:absolute;bottom:0;width:min(56%,700px);height:auto;aspect-ratio:1000/720;opacity:.1;pointer-events:none;z-index:0}
+#rodologiya .tree-ghost{right:0}
+.kund .tree-ghost{left:0}
+@media (min-width:861px){
+  .rod-stage{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+  .rod-tree{order:-1}
+}
+@media (max-width:860px){
+  .plate{border-radius:calc(20px * (1 - var(--enter))) calc(20px * (1 - var(--enter))) 0 0}
+  .tree-hero{top:calc(var(--hdr) + 40px);bottom:auto;width:100%;opacity:.13}
+  .tree-ghost{width:90%;opacity:.07}
+  .kund .ladder{order:1;justify-self:start;max-width:none}
+}
+html.no-plate .plate{transform:none;border-radius:0}
+html.no-plate .plate::after{display:none}
+
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
-  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}
 }

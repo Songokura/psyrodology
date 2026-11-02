@@ -101,7 +101,6 @@
   else requestAnimationFrame(function(){ requestAnimationFrame(function(){ hero.classList.add('is-in'); }); });
 
   /* Родовое древо: семь поколений */
-  var svg = document.querySelector('.tree');
   var NS = 'http://www.w3.org/2000/svg';
   var GEN = 7, W = 1000, H = 720, BOTTOM = 660, STEP = 86;
   var radius = [10, 6.5, 5.6, 4.8, 4, 3.3, 2.7, 2.2];
@@ -111,31 +110,48 @@
     var x = n === 1 ? W / 2 : (W - span) / 2 + (i + 0.5) * span / n;
     return [x, BOTTOM - g * STEP];
   }
-  var groups = [];
-  for (var g = 1; g <= GEN; g++){
-    var grp = document.createElementNS(NS, 'g');
-    grp.setAttribute('class', 'gen g' + g);
-    var links = '', n = Math.pow(2, g);
-    for (var i = 0; i < n; i++){
-      var c = pos(g - 1, i >> 1), p = pos(g, i);
-      var mid = (c[1] + p[1]) / 2;
-      var path = document.createElementNS(NS, 'path');
-      path.setAttribute('class', 'lk');
-      path.setAttribute('pathLength', '1');
-      path.setAttribute('d', 'M' + c[0].toFixed(1) + ' ' + c[1] + 'C' + c[0].toFixed(1) + ' ' + mid + ' ' + p[0].toFixed(1) + ' ' + mid + ' ' + p[0].toFixed(1) + ' ' + p[1]);
-      grp.appendChild(path);
+  /* Одно древо на три места: сцена «семь поколений», герой, тихий фон в блоках услуг */
+  function buildTree(el){
+    var out = [];
+    for (var g = 1; g <= GEN; g++){
+      var grp = document.createElementNS(NS, 'g');
+      grp.setAttribute('class', 'gen g' + g);
+      var n = Math.pow(2, g);
+      for (var i = 0; i < n; i++){
+        var c = pos(g - 1, i >> 1), p = pos(g, i);
+        var mid = (c[1] + p[1]) / 2;
+        var path = document.createElementNS(NS, 'path');
+        path.setAttribute('class', 'lk');
+        path.setAttribute('pathLength', '1');
+        path.setAttribute('d', 'M' + c[0].toFixed(1) + ' ' + c[1] + 'C' + c[0].toFixed(1) + ' ' + mid + ' ' + p[0].toFixed(1) + ' ' + mid + ' ' + p[0].toFixed(1) + ' ' + p[1]);
+        grp.appendChild(path);
+      }
+      for (var j = 0; j < n; j++){
+        var q = pos(g, j);
+        var dot = document.createElementNS(NS, 'circle');
+        dot.setAttribute('class', 'nd');
+        dot.setAttribute('cx', q[0].toFixed(1)); dot.setAttribute('cy', q[1]);
+        dot.setAttribute('r', radius[g]);
+        grp.appendChild(dot);
+      }
+      el.appendChild(grp);
+      out.push(grp);
     }
-    for (var j = 0; j < n; j++){
-      var q = pos(g, j);
-      var dot = document.createElementNS(NS, 'circle');
-      dot.setAttribute('class', 'nd');
-      dot.setAttribute('cx', q[0].toFixed(1)); dot.setAttribute('cy', q[1]);
-      dot.setAttribute('r', radius[g]);
-      grp.appendChild(dot);
-    }
-    svg.appendChild(grp);
-    groups.push(grp);
+    return out;
   }
+  document.querySelectorAll('.tree-ghost').forEach(function(el){
+    buildTree(el).forEach(function(gr){ gr.classList.add('on'); });
+  });
+  var heroTree = document.querySelector('.tree-hero');
+  if (heroTree){
+    var hg = buildTree(heroTree);
+    hg.forEach(function(gr, idx){
+      if (skipIntro || reduce) gr.classList.add('on');
+      else setTimeout(function(){ gr.classList.add('on'); }, 500 + idx * 220);
+    });
+  }
+  var svg = document.querySelector('.tree-main');
+  var groups = buildTree(svg);
   var y0 = pos(0, 0);
   var ring = document.createElementNS(NS, 'circle');
   ring.setAttribute('class', 'you-ring'); ring.setAttribute('cx', y0[0]); ring.setAttribute('cy', y0[1]); ring.setAttribute('r', 18);
@@ -145,7 +161,7 @@
   yt.setAttribute('class', 'you-t'); yt.setAttribute('x', y0[0]); yt.setAttribute('y', y0[1] + 50); yt.textContent = 'вы'; yt.setAttribute('data-you', '');
   svg.appendChild(ring); svg.appendChild(you); svg.appendChild(yt);
 
-  var rod = document.querySelector('.rod');
+  var rod = document.getElementById('rod');
   var track = document.querySelector('.rod-track');
   var numEl = document.querySelector('[data-num]');
   var capEl = document.querySelector('[data-cap]');
@@ -212,6 +228,41 @@
       new IntersectionObserver(function(en){ runLoop(en[0].isIntersecting); }, {threshold:0.2}).observe(rod);
     } else runLoop(true);
   }
+
+
+  /* Плиты: один слушатель scroll через rAF. Сначала читаем все обёртки пакетом,
+     потом пишем только изменившееся. Уходящая плита уменьшается и темнеет (--exit),
+     входящая приезжает со скруглёнными углами (--enter), .on раскрывает кадр-крону */
+  var pws = [].slice.call(document.querySelectorAll('.pw'));
+  /* уходить (уменьшаться и темнеть) плита может только под следующую плиту:
+     под обычной секцией осталась бы тёмная рамка */
+  var stacked = pws.map(function(pw){ var n = pw.nextElementSibling; return !!(n && n.classList.contains('pw')); });
+  if (reduce) doc.classList.add('no-plate');
+  var plateTick = 0;
+  function clamp(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function plates(){
+    plateTick = 0;
+    var Hv = window.innerHeight;
+    var rects = pws.map(function(pw){ return pw.getBoundingClientRect(); });
+    pws.forEach(function(pw, k){
+      var r = rects[k];
+      /* далеко за экраном - не считаем, состояние уже крайнее */
+      if ((r.bottom < -Hv && (pw._x === '1.000' || !stacked[k])) || (r.top > Hv * 2 && pw._e === '0.000')) return;
+      var enter = clamp(1 - r.top / Hv), exit = stacked[k] ? clamp(1 - r.bottom / Hv) : 0;
+      if (k === 0) enter = 1; /* герой стоит на месте */
+      var e = enter.toFixed(3), x = exit.toFixed(3);
+      if (pw._e !== e){ pw._e = e; pw.style.setProperty('--enter', e); }
+      if (pw._x !== x){ pw._x = x; pw.style.setProperty('--exit', x); }
+      pw.classList.toggle('gone', exit >= 1);
+      if (enter > 0.55) pw.classList.add('on');
+    });
+  }
+  function reqPlates(){ if (!plateTick) plateTick = requestAnimationFrame(plates); }
+  if (!reduce){
+    window.addEventListener('scroll', reqPlates, {passive:true});
+    window.addEventListener('resize', reqPlates);
+    plates();
+  } else pws.forEach(function(pw){ pw.classList.add('on'); });
 
   /* Видео: немая петля в кадре, полный ролик по клику */
   var cards = document.querySelectorAll('.vcard');
